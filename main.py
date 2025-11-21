@@ -75,9 +75,8 @@ def GoToStop(RA, Dec):
     GoTo(RA, Dec)
     scope.tracking = False
 
-# needs work
 def GoToAltAz(Az, Alt):
-    return
+    scope.set_azalt(Az, Alt)
 
 # stops or starts tracking at the given rate. if given 0.0 for either RA / Dec rate,
 # scope will default to tracking at sidereal rate.

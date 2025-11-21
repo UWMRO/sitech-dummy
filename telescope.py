@@ -24,15 +24,17 @@ class telescope:
     def set_coords(self, RA, Dec):
         self.coords = SkyCoord(ra=RA * u.hourangle, dec=Dec * u.deg, frame='icrs')
     
-    # altaz --> RA / Dec transform needs work
+    # note: first call of set_azalt will download iers data. it'll be slow
     def set_azalt(self, Az, Alt):
         loc = EarthLocation.from_geodetic(lon=LOCATION[1], lat=LOCATION[0], height=LOCATION[2])
-        altaz = AltAz(Alt * u.deg, Az * u.deg, pressure=0, location=loc, obstime=astropy.time.Time(time.time(), format='unix'))
-        self.coords = SkyCoord(frame=altaz)
+        altaz = AltAz(pressure=0, location=loc, obstime=astropy.time.Time(time.time(), format='unix'))
+        self.coords = SkyCoord(alt=Latitude(Alt, unit='deg'), az=Longitude(Az, unit='deg'), frame=altaz)
+        # transform to ra / dec (icrs)
+        self.coords = self.coords.transform_to('icrs')
 
     def __str__(self):
         return f"{self.park}, {self.tracking}, {self.coords.ra / 15}, {self.coords.dec}, {self.blinky}"
 
 t = telescope()
-t.set_azalt(10, 50)
+t.set_azalt(1, 20)
 print(t)
