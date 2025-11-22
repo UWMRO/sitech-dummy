@@ -27,7 +27,7 @@ async def receive_commands(reader, writer):
         try:
             eval(command)
         except Exception as e:
-            print(f"threw {e}")
+            print(f"Exception Thrown: {e}")
         
         writer.write("response\n".encode())
         await writer.drain()

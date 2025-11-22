@@ -20,21 +20,37 @@ class telescope:
 
         # motor mode
         self.blinky = False
+
+        # EarthLocation of the scope.
+        loc = EarthLocation.from_geodetic(lon=LOCATION[1], lat=LOCATION[0], height=LOCATION[2])
+        # Alt-Az reference frame for the scope.
+        self.altaz = AltAz(pressure=0, location=loc, obstime=astropy.time.Time(time.time(), format='unix'))
     
     def set_coords(self, RA, Dec):
         self.coords = SkyCoord(ra=RA * u.hourangle, dec=Dec * u.deg, frame='icrs')
     
     # note: first call of set_azalt will download iers data. it'll be slow
     def set_azalt(self, Az, Alt):
-        loc = EarthLocation.from_geodetic(lon=LOCATION[1], lat=LOCATION[0], height=LOCATION[2])
-        altaz = AltAz(pressure=0, location=loc, obstime=astropy.time.Time(time.time(), format='unix'))
-        self.coords = SkyCoord(alt=Latitude(Alt, unit='deg'), az=Longitude(Az, unit='deg'), frame=altaz)
+        self.coords = SkyCoord(alt=Latitude(Alt, unit='deg'), az=Longitude(Az, unit='deg'), frame=self.altaz)
         # transform to ra / dec (icrs)
         self.coords = self.coords.transform_to('icrs')
 
+    # Standard string implementation.
     def __str__(self):
-        return f"{self.park}, {self.tracking}, {self.coords.ra / 15}, {self.coords.dec}, {self.blinky}"
-
-t = telescope()
-t.set_azalt(1, 20)
-print(t)
+        # boolParms:
+        boolParms = 0
+        # Bit 00 (initialized)
+        boolParms += 1
+        # Bit 01 (tracking)
+        if self.tracking:
+            boolParms += 2
+        # Bit 04 (parked)
+        if self.park:
+            boolParms += 16
+        # Bit 06 (blinky)
+        if self.blinky:
+            boolParms += 64
+        
+        altaz = self.coords.transform_to(self.altaz)
+        # verify ra is in hours regardless of azalt / ra / dec
+        return f"{boolParms};{self.coords.ra};{self.coords.dec};{altaz.alt};{altaz.az}"
