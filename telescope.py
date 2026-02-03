@@ -26,10 +26,11 @@ class telescope:
         # Alt-Az reference frame for the scope.
         self.altaz = AltAz(pressure=0, location=loc, obstime=astropy.time.Time(time.time(), format='unix'))
     
+    # Sets RA / Dec with degree values.
     def set_coords(self, RA, Dec):
-        self.coords = SkyCoord(ra=RA * u.hourangle, dec=Dec * u.deg, frame='icrs')
+        self.coords = SkyCoord(ra=RA * u.deg, dec=Dec * u.deg, frame='icrs')
     
-    # note: first call of set_azalt will download iers data. it'll be slow
+    # Note: first call of set_azalt will download IERS data. it'll be slow
     def set_azalt(self, Az, Alt):
         self.coords = SkyCoord(alt=Latitude(Alt, unit='deg'), az=Longitude(Az, unit='deg'), frame=self.altaz)
         # transform to ra / dec (icrs)
@@ -53,4 +54,4 @@ class telescope:
         
         altaz = self.coords.transform_to(self.altaz)
         # verify ra is in hours regardless of azalt / ra / dec
-        return f"{boolParms};{self.coords.ra};{self.coords.dec};{altaz.alt};{altaz.az}"
+        return f"{boolParms};{self.coords.ra.hourangle};{self.coords.dec.value};{altaz.alt.value};{altaz.az.value}"
