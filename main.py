@@ -91,6 +91,11 @@ def GoToAltAzStop(reader: asyncio.StreamReader, writer: asyncio.StreamWriter, ar
 
 # stops or starts tracking at the given rate. if given 0.0 for either RA / Dec rate,
 # scope will default to tracking at sidereal rate.
+# format: SetTrackMode track rate RARate, DecRate
+#       track: determines whether the telescope should track. 1 for yes, any other value for 0.
+#       rate: 1 = use the following rates.  0 means track at the sidereal rate.
+#       RARate: Right Ascension Rate (arc seconds per second).  A 0.0 will  track at the sidereal rate.
+#       DecRate: Declination rate (arc seconds per second) A 0.0 will track the declination according to the telescope model and refraction.
 # track, rate, RARate, DecRate
 def SetTrackMode(reader: asyncio.StreamReader, writer: asyncio.StreamWriter, args: list[str]):
     track = True if args[0] == "1" else False
@@ -98,19 +103,17 @@ def SetTrackMode(reader: asyncio.StreamReader, writer: asyncio.StreamWriter, arg
     RARate = float(args[2])
     DecRate = float(args[3])
     
-    if track != 0:
-        scope.tracking = False
-    else:
-        scope.tracking = True
-        if rate == 1:
-            if RARate == 0.0:
-                RARate = "sidereal"
-            if DecRate == 0.0:
-                DecRate = "sidereal"
+    scope.tracking = track
+    if rate == 1:
+        if RARate == 0.0:
+            scope.ra_tracking_sidereal = True
+        else:
+            scope.ra_tracking_sidereal = False
+        if DecRate == 0.0:
+            scope.dec_tracking_sidereal = True
+        else:
+            scope.dec_tracking_sidereal = False
             
-            # debug information
-            print(f"DEBUG: Tracking at given rate: RA @ {RARate} arcsec / s, Dec @ {DecRate} arcsec / s")
-
 async def main():
     server = await asyncio.start_server(receive_commands, host="127.0.0.1", port=8001)
     print("server started")

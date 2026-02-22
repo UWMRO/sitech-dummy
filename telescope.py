@@ -1,5 +1,5 @@
 from astropy import units as u
-from astropy.coordinates import SkyCoord, AltAz, EarthLocation, ICRS, Latitude, Longitude
+from astropy.coordinates import SkyCoord, AltAz, EarthLocation, Latitude, Longitude
 import astropy
 import time
 
@@ -21,10 +21,20 @@ class telescope:
         # motor mode
         self.blinky = False
 
+        # tracking rate
+        # assume we are not tracking in initial state. 
+        # (therefore we are not tracking @ sidereal rate)
+        self.ra_tracking_sidereal = False
+        self.dec_tracking_sidereal = False
+
         # EarthLocation of the scope.
-        loc = EarthLocation.from_geodetic(lon=LOCATION[1], lat=LOCATION[0], height=LOCATION[2])
+        loc = EarthLocation.from_geodetic(lon=LOCATION[1], 
+                                          lat=LOCATION[0], 
+                                          height=LOCATION[2])
         # Alt-Az reference frame for the scope.
-        self.altaz = AltAz(pressure=0, location=loc, obstime=astropy.time.Time(time.time(), format='unix'))
+        self.altaz = AltAz(pressure=0, 
+                           location=loc, 
+                           obstime=astropy.time.Time(time.time(), format='unix'))
     
     # Sets RA / Dec with degree values.
     def set_coords(self, RA, Dec):
@@ -32,7 +42,9 @@ class telescope:
     
     # Note: first call of set_azalt will download IERS data. it'll be slow
     def set_azalt(self, Az, Alt):
-        self.coords = SkyCoord(alt=Latitude(Alt, unit='deg'), az=Longitude(Az, unit='deg'), frame=self.altaz)
+        self.coords = SkyCoord(alt=Latitude(Alt, unit='deg'), 
+                               az=Longitude(Az, unit='deg'), 
+                               frame=self.altaz)
         # transform to ra / dec (icrs)
         self.coords = self.coords.transform_to('icrs')
 
@@ -51,6 +63,9 @@ class telescope:
         # Bit 06 (blinky)
         if self.blinky:
             boolParms += 64
+        # Bit 15 (tracking at offset rate)
+        if not (self.ra_tracking_sidereal and self.dec_tracking_sidereal):
+            boolParms += 32768
         
         altaz = self.coords.transform_to(self.altaz)
         # verify ra is in hours regardless of azalt / ra / dec
