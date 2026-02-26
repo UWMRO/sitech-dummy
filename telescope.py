@@ -38,7 +38,7 @@ class telescope:
     
     # Sets RA / Dec with degree values.
     def set_coords(self, RA, Dec):
-        self.coords = SkyCoord(ra=RA * u.deg, dec=Dec * u.deg, frame='icrs')
+        self.coords = SkyCoord(ra=RA * u.hourangle, dec=Dec * u.deg, frame='icrs')
     
     # Note: first call of set_azalt will download IERS data. it'll be slow
     def set_azalt(self, Az, Alt):

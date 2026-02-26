@@ -68,7 +68,7 @@ def GoTo(reader: asyncio.StreamReader, writer: asyncio.StreamWriter, args: list[
     RA = float(args[0])
     Dec = float(args[1])
     # SiTech takes RA in hours (1 hr = 15 degrees)
-    scope.set_coords(RA / 15, Dec)
+    scope.set_coords(RA, Dec)
     scope.tracking = True
 
     # debug logging
