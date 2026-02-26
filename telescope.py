@@ -2,6 +2,7 @@ from astropy import units as u
 from astropy.coordinates import SkyCoord, AltAz, EarthLocation, Latitude, Longitude
 import astropy
 import time
+import math
 
 # Lat, Long and Height of the MRO scope.
 LOCATION = (46.95108305039964, -120.7245251074869, 1198)
@@ -68,5 +69,10 @@ class telescope:
             boolParms += 32768
         
         altaz = self.coords.transform_to(self.altaz)
-        # verify ra is in hours regardless of azalt / ra / dec
-        return f"{boolParms};{self.coords.ra.hourangle};{self.coords.dec.value};{altaz.alt.value};{altaz.az.value}"
+
+        # Uses the air mass approximation of AM = 1 / cos(ZA) where ZA = zenith angle.
+        # math.cos takes angles in radians so we need to convert w/ factor 2pi/360.
+        # formula: ( 1 / cos( pi - ( altitude * 2pi / 360 ) ) )
+        airmass = 1 / (math.cos(math.pi - ((altaz.alt.value * 2 * math.pi) / 360)))
+
+        return f"{boolParms};{self.coords.ra.hourangle};{self.coords.dec.value};{altaz.alt.value};{altaz.az.value};0.0;0.0;0.0;0.0;0.0;{airmass};_Placeholder Content"

@@ -72,7 +72,7 @@ def GoTo(reader: asyncio.StreamReader, writer: asyncio.StreamWriter, args: list[
     scope.tracking = True
 
     # debug logging
-    print(f"DEBUG: Scope moved to {RA / 15} hours RA, {Dec} degrees.")
+    print(f"DEBUG: Scope moved to {RA} hours RA, {Dec} degrees.")
 
 def GoToStop(reader: asyncio.StreamReader, writer: asyncio.StreamWriter, args: list[str]):
     GoTo(reader, writer, args)
